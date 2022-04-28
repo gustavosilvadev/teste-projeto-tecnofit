@@ -19,7 +19,13 @@ class PersonalRecordContoller extends Controller
     public function exibirRanking()
     {
         $personal_record = DB::table('personal_record AS pr')
-                            ->select('mov.name as Movimento','usr.name as Nome', DB::raw('MAX(pr.value) as Value'))
+                            ->select(
+                                DB::raw('DENSE_RANK() OVER (
+                                        PARTITION BY mov.name
+                                        ORDER BY MAX(pr.value) DESC) AS Colocação'),
+                                'mov.name as Movimento',
+                                'usr.name as Nome', 
+                                DB::raw('MAX(pr.value) as Value'))
                             ->join('user as usr','usr.id','=','pr.user_id')
                             ->join('movement as mov','mov.id','=','pr.movement_id')
                             ->groupBy('usr.name','mov.name')
